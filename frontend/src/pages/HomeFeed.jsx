@@ -17,6 +17,41 @@ export default function HomeFeed() {
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const categoriesList = [
+    { name: 'All', icon: '✨' },
+    { name: 'Tops', icon: '👔' },
+    { name: 'Jackets', icon: '🧥' },
+    { name: 'Dresses', icon: '👗' },
+    { name: 'Shoes', icon: '👟' },
+    { name: 'Trousers', icon: '👖' },
+    { name: 'Knitwear', icon: '🧶' },
+    { name: 'Accessories', icon: '👜' },
+    { name: 'Hoodies', icon: '🧥' },
+    { name: 'Jeans', icon: '👖' },
+    { name: 'Sunglasses', icon: '🕶️' }
+  ];
+
+  const handleCategorySelect = async (catName) => {
+    setActiveCategory(catName);
+    if (catName === 'All') {
+      loadFeed(sessionId, consent);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await searchArticles(catName, sessionId, consent, 16);
+      if (res && res.results) {
+        setFeedItems(res.results);
+      }
+    } catch (err) {
+      console.error('Category filter search error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [eventCount, setEventCount] = useState(0);
   const [lastEventMsg, setLastEventMsg] = useState('');
   const [recentOrderArticle, setRecentOrderArticle] = useState(null);
@@ -236,6 +271,24 @@ export default function HomeFeed() {
               <span>Explore Collection</span>
               <span>➔</span>
             </a>
+          </div>
+
+          {/* Luxury Category Pill Filter Bar */}
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+            {categoriesList.map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => handleCategorySelect(cat.name)}
+                className={`px-4.5 py-2 text-xs font-bold rounded-full transition-all whitespace-nowrap flex items-center gap-1.5 shadow-sm border ${
+                  activeCategory === cat.name
+                    ? 'bg-[#5E7656] text-white border-[#5E7656] shadow-md scale-105'
+                    : 'bg-white text-[#2B2B2B] hover:bg-[#F3EFE8] border-[#ECE8E2]'
+                }`}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.name}</span>
+              </button>
+            ))}
           </div>
 
           {/* Product Grid */}
