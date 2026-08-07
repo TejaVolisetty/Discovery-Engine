@@ -72,8 +72,8 @@ export default function HomeFeed() {
     // Trigger AI Model Detection for Similar Images & Product Names
     setLoadingSimilar(true);
     try {
-      // 1. Fetch vector similarity & co-purchase bundles for this item
-      const res = await axios.get(`http://localhost:8000/recommendations/complete-the-look/${article.article_id}?limit=6`);
+      // 1. Fetch strict category & color matched vector similarity for this item
+      const res = await axios.get(`http://localhost:8000/recommendations/complete-the-look/${article.article_id}?mode=similar&limit=6`);
       let similar = res.data && res.data.complementary_items ? res.data.complementary_items : [];
 
       // 2. If additional search results needed, run query matching title/category

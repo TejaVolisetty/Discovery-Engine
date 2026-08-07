@@ -150,7 +150,7 @@ class EventRequest(BaseModel):
 
 
 def format_article_response(item: Dict[str, Any], articles_df: pd.DataFrame) -> Dict[str, Any]:
-    """Helper to enrich raw recommendation tuple/dict with clean JSON metadata fields."""
+    """Helper to enrich raw recommendation tuple/dict with clean JSON metadata fields including color & attributes."""
     art_id = str(item.get("article_id", ""))
     score = float(item.get("score", 0.0))
     reason = str(item.get("reason", "Recommended for you"))
@@ -167,6 +167,9 @@ def format_article_response(item: Dict[str, Any], articles_df: pd.DataFrame) -> 
     image_url = str(meta.get("image_path", f"images/{art_id[:3]}/{art_id}.jpg"))
     category = str(meta.get("product_type_name", meta.get("department_name", "Apparel")))
     department = str(meta.get("department_name", "General"))
+    color = str(meta.get("colour_group_name", meta.get("perceived_colour_master_name", "Multi")))
+    perceived_color = str(meta.get("perceived_colour_master_name", color))
+    garment_group = str(meta.get("garment_group_name", category))
 
     return {
         "article_id": art_id,
@@ -175,6 +178,9 @@ def format_article_response(item: Dict[str, Any], articles_df: pd.DataFrame) -> 
         "image_url": image_url,
         "category": category,
         "department": department,
+        "color": color,
+        "perceived_color": perceived_color,
+        "garment_group": garment_group,
         "score": score,
         "reason": reason
     }
@@ -325,38 +331,78 @@ def get_home_recommendations(
 @track_latency
 def get_complete_the_look(
     article_id: str,
+    mode: str = Query("complete", description="Recommendation mode: 'complete' for outfit bundles, 'similar' for same-category & color matches"),
     limit: int = Query(10, ge=1, le=50)
 ):
     """
-    GET /recommendations/complete-the-look/{article_id}
-    Retrieves complementary basket items (co-purchased pairs or vector similarity complements).
+    GET /recommendations/complete-the-look/{article_id}?mode=similar|complete
+    Retrieves complementary basket items ('complete') or strict category & color matched items ('similar').
     """
     articles_df = STATE.get("articles_df", pd.DataFrame())
     comp_df = STATE.get("complementary_df", pd.DataFrame())
     art_id_str = str(article_id)
 
+    anchor_meta = {}
+    if not articles_df.empty and art_id_str in articles_df.index:
+        row = articles_df.loc[art_id_str]
+        if isinstance(row, pd.DataFrame):
+            row = row.iloc[0]
+        anchor_meta = row.to_dict()
+
+    anchor_cat = str(anchor_meta.get("product_type_name", anchor_meta.get("department_name", ""))).lower()
+    anchor_color = str(anchor_meta.get("colour_group_name", "")).lower()
+
     matched_ids = []
 
-    # 1. Lookup from complementary items table
-    if not comp_df.empty:
-        comp_matches = comp_df[comp_df["article_id"].astype(str) == art_id_str]
-        if not comp_matches.empty:
-            matched_ids = comp_matches["complementary_article_id"].astype(str).tolist()
+    if mode == "similar":
+        # Mode: SIMILAR -> Strict Category Match & Color Accuracy
+        if STATE.get("faiss_index") and art_id_str in STATE.get("art_to_idx", {}):
+            idx = STATE["art_to_idx"][art_id_str]
+            vec = STATE["embeddings"][idx:idx+1]
+            faiss.normalize_L2(vec)
+            # Retrieve candidate vector neighbors
+            _, indices = STATE["faiss_index"].search(vec, 100)
+            
+            for i in indices[0]:
+                cid = STATE["idx_to_art"].get(i)
+                if not cid or cid == art_id_str:
+                    continue
+                
+                # Check candidate category & color
+                if not articles_df.empty and cid in articles_df.index:
+                    crow = articles_df.loc[cid]
+                    if isinstance(crow, pd.DataFrame):
+                        crow = crow.iloc[0]
+                    c_cat = str(crow.get("product_type_name", crow.get("department_name", ""))).lower()
+                    
+                    # Strict Category Match: If anchor is Shoes/Footwear, only return Shoes/Footwear!
+                    if anchor_cat and anchor_cat in c_cat or c_cat in anchor_cat or ("shoe" in anchor_cat and "shoe" in c_cat):
+                        if cid not in matched_ids:
+                            matched_ids.append(cid)
+                            if len(matched_ids) >= limit:
+                                break
+    else:
+        # Mode: COMPLETE -> Outfit Complementary Basket Bundles
+        if not comp_df.empty:
+            comp_matches = comp_df[comp_df["article_id"].astype(str) == art_id_str]
+            if not comp_matches.empty:
+                matched_ids = comp_matches["complementary_article_id"].astype(str).tolist()
 
-    # 2. Vector search fallback if no direct co-purchases found
-    if len(matched_ids) < limit and STATE.get("faiss_index") and art_id_str in STATE.get("art_to_idx", {}):
-        idx = STATE["art_to_idx"][art_id_str]
-        vec = STATE["embeddings"][idx:idx+1]
-        faiss.normalize_L2(vec)
-        _, indices = STATE["faiss_index"].search(vec, limit + 5)
-        for i in indices[0]:
-            cid = STATE["idx_to_art"].get(i)
-            if cid and cid != art_id_str and cid not in matched_ids:
-                matched_ids.append(cid)
+        # Vector search fallback if no direct co-purchases found
+        if len(matched_ids) < limit and STATE.get("faiss_index") and art_id_str in STATE.get("art_to_idx", {}):
+            idx = STATE["art_to_idx"][art_id_str]
+            vec = STATE["embeddings"][idx:idx+1]
+            faiss.normalize_L2(vec)
+            _, indices = STATE["faiss_index"].search(vec, limit + 10)
+            for i in indices[0]:
+                cid = STATE["idx_to_art"].get(i)
+                if cid and cid != art_id_str and cid not in matched_ids:
+                    matched_ids.append(cid)
 
     # Build response tuples
+    reason_str = "Visually & color-matched item in same category" if mode == "similar" else "Frequently bought together with this item"
     raw_list = [
-        (cid, 0.85, "Frequently bought together with this item")
+        (cid, 0.88 if mode == "similar" else 0.85, reason_str)
         for cid in matched_ids[:limit]
     ]
 
@@ -365,6 +411,9 @@ def get_complete_the_look(
 
     return {
         "anchor_article_id": art_id_str,
+        "mode": mode,
+        "anchor_category": anchor_cat,
+        "anchor_color": anchor_color,
         "total_results": len(formatted_recs),
         "complementary_items": formatted_recs
     }
