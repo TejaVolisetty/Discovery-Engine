@@ -22,6 +22,16 @@ _POPULARITY_CACHE = None
 _ARTICLES_DF_CACHE = None
 
 
+def reset_caches():
+    """Resets global module caches so updated parquet files are reloaded."""
+    global _EMBEDDINGS_CACHE, _ID_TO_INDEX_CACHE, _INDEX_TO_ID_CACHE, _POPULARITY_CACHE, _ARTICLES_DF_CACHE
+    _EMBEDDINGS_CACHE = None
+    _ID_TO_INDEX_CACHE = None
+    _INDEX_TO_ID_CACHE = None
+    _POPULARITY_CACHE = None
+    _ARTICLES_DF_CACHE = None
+
+
 def _load_resources():
     """Lazy loads embeddings, ID mappings, articles metadata, and popularity counts into memory."""
     global _EMBEDDINGS_CACHE, _ID_TO_INDEX_CACHE, _INDEX_TO_ID_CACHE, _POPULARITY_CACHE, _ARTICLES_DF_CACHE

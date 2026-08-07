@@ -24,6 +24,8 @@ export const fetchHomeRecommendations = async (sessionId, consent = true, limit 
   }
 };
 
+export const getHomeRecommendations = fetchHomeRecommendations;
+
 export const logEvent = async (sessionId, articleId, eventType = 'click', consent = true) => {
   try {
     const res = await axios.post(`${API_BASE_URL}/events`, {

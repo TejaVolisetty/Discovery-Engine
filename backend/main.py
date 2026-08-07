@@ -24,13 +24,13 @@ if str(PROJECT_ROOT) not in sys.path:
 
 # Internal imports
 try:
-    from backend.recommend.session_scorer import score_candidates
+    from backend.recommend.session_scorer import score_candidates, reset_caches
     from backend.recommend.diversity import enforce_diversity
     from backend.guardrails.dpdp import anonymize_session, check_consent, audit_log
     from backend.guardrails.explain import attach_explanations
     from backend.guardrails.latency import track_latency
 except ImportError:
-    from recommend.session_scorer import score_candidates
+    from recommend.session_scorer import score_candidates, reset_caches
     from recommend.diversity import enforce_diversity
     from guardrails.dpdp import anonymize_session, check_consent, audit_log
     from guardrails.explain import attach_explanations
@@ -55,6 +55,9 @@ async def lifespan(app: FastAPI):
     print("\n================================================================================")
     print("                STARTING DISCOVERY ENGINE BACKEND SERVICE                       ")
     print("================================================================================")
+
+    # Force reset session_scorer caches to load updated parquet data
+    reset_caches()
 
     # 1. Load Parquet Data
     art_path = DATA_PROCESSED_DIR / "articles.parquet"
