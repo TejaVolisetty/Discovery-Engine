@@ -553,12 +553,34 @@ def search_articles(
     if not q.strip():
         raise HTTPException(status_code=400, detail="Search query cannot be empty.")
 
+    # Parse Natural Language Fashion Intent (e.g. "under $100", "under 100", "black shoes")
+    import re
+    max_price_threshold = None
+    price_match = re.search(r'(?:under|below|less than|\$)\s*(\d+)', q, re.IGNORECASE)
+    if price_match:
+        val = float(price_match.group(1))
+        max_price_threshold = val / 100.0
+
     # 1. Encode Query Vector & FAISS Search
     query_vec = encoder.encode([q], normalize_embeddings=True).astype(np.float32)
-    top_faiss_k = min(200, index.ntotal if index else 50)
+    top_faiss_k = min(250, index.ntotal if index else 50)
     
     distances, indices = index.search(query_vec, top_faiss_k)
     candidate_ids = [STATE["idx_to_art"][i] for i in indices[0] if i in STATE["idx_to_art"]]
+
+    # Price Filter if natural language budget specified
+    if max_price_threshold is not None and not articles_df.empty:
+        filtered_cands = []
+        for aid in candidate_ids:
+            if aid in articles_df.index:
+                row = articles_df.loc[aid]
+                if isinstance(row, pd.DataFrame):
+                    row = row.iloc[0]
+                p = float(row.get("price", 0.05))
+                if p <= max_price_threshold:
+                    filtered_cands.append(aid)
+        if filtered_cands:
+            candidate_ids = filtered_cands
 
     session_events = SESSION_STORE.get(session_id, []) if session_id else []
     consent_granted = check_consent({"consent": consent})
