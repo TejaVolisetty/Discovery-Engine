@@ -9,8 +9,6 @@ export default function Navbar({
   onToggleConsent,
   onOpenCart
 }) {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && onSearchSubmit) {
       onSearchSubmit(searchQuery);
@@ -18,12 +16,12 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-4 z-40 px-4 md:px-8 max-w-[1440px] mx-auto transition-all">
-      <nav className="luxury-glass rounded-full px-6 py-3.5 flex items-center justify-between shadow-sm border border-[#ECE8E2]">
+    <header className="sticky top-4 z-40 px-4 md:px-8 max-w-[1440px] mx-auto transition-all preserve-3d">
+      <nav className="luxury-glass-3d rounded-full px-6 py-3.5 flex items-center justify-between shadow-xl border border-[#ECE8E2] transform hover:translate-y-[-2px] transition-transform duration-300">
         
         {/* Brand Logo & Icon */}
         <a href="#" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-full bg-[#5E7656] text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-full bg-[#5E7656] text-white flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 3v18m0-18C8 3 4 7 4 12s4 9 8 9m0-18c4 0 8 4 8 9s-4 9-8 9" />
             </svg>
@@ -55,12 +53,12 @@ export default function Navbar({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="w-44 md:w-56 pl-9 pr-8 py-1.5 text-xs bg-[#F3EFE8] border border-[#ECE8E2] rounded-full text-[#2B2B2B] placeholder-[#777777] focus:outline-none focus:ring-1 focus:ring-[#5E7656] transition-all"
+              className="w-44 md:w-56 pl-9 pr-8 py-1.5 text-xs bg-[#F3EFE8]/80 border border-[#ECE8E2] rounded-full text-[#2B2B2B] placeholder-[#777777] focus:outline-none focus:ring-1 focus:ring-[#5E7656] transition-all shadow-inner"
             />
             <svg className="w-3.5 h-3.5 absolute left-3 text-[#777777]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span className="absolute right-2.5 px-1.5 py-0.5 text-[9px] font-mono font-medium text-[#777777] bg-white rounded border border-[#ECE8E2]">
+            <span className="absolute right-2.5 px-1.5 py-0.5 text-[9px] font-mono font-medium text-[#777777] bg-white rounded border border-[#ECE8E2] shadow-sm">
               ⌘ K
             </span>
           </div>
@@ -69,7 +67,7 @@ export default function Navbar({
           <button
             onClick={onToggleConsent}
             title={consent ? "Personalization Active (DPDP Compliant)" : "Consent Revoked (Generic Mode)"}
-            className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all flex items-center gap-1 ${
+            className={`px-3 py-1 text-[10px] font-bold rounded-full border transition-all flex items-center gap-1 shadow-sm ${
               consent
                 ? "bg-[#5E7656]/10 text-[#5E7656] border-[#5E7656]/30"
                 : "bg-[#777777]/10 text-[#777777] border-[#777777]/30"
@@ -80,7 +78,7 @@ export default function Navbar({
           </button>
 
           {/* Wishlist Icon */}
-          <button className="p-2 text-[#2B2B2B] hover:text-[#5E7656] transition-colors relative" title="Wishlist">
+          <button className="p-2 text-[#2B2B2B] hover:text-[#5E7656] hover:scale-110 transition-all relative" title="Wishlist">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
@@ -89,24 +87,17 @@ export default function Navbar({
           {/* Cart Icon with Badge */}
           <button
             onClick={onOpenCart}
-            className="p-2 text-[#2B2B2B] hover:text-[#5E7656] transition-colors relative flex items-center justify-center"
+            className="p-2 text-[#2B2B2B] hover:text-[#5E7656] hover:scale-110 transition-all relative flex items-center justify-center"
             title="View Bag"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#5E7656] text-white text-[9px] font-extrabold flex items-center justify-center shadow">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#5E7656] text-white text-[9px] font-extrabold flex items-center justify-center shadow-md animate-bounce">
                 {cartCount}
               </span>
             )}
-          </button>
-
-          {/* Profile Icon */}
-          <button className="p-2 text-[#2B2B2B] hover:text-[#5E7656] transition-colors hidden sm:block" title="Account">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
           </button>
         </div>
       </nav>

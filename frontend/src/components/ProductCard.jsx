@@ -83,64 +83,66 @@ export default function ProductCard({ article, onClick, onAddToCart, onHoverLong
   const priceFormatted = article.price ? `$${(article.price * 100).toFixed(0)}` : '$299';
 
   return (
-    <div
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`group relative bg-white rounded-[24px] p-4 border border-[#ECE8E2] luxury-shadow luxury-shadow-hover transition-all duration-500 cursor-pointer flex flex-col justify-between ${
-        isClicked ? 'scale-[0.98]' : ''
-      }`}
-    >
-      {/* Product Image Area */}
-      <div className="relative aspect-square w-full rounded-[20px] bg-[#F3EFE8]/60 overflow-hidden flex items-center justify-center p-4">
-        
-        {/* Badge: Bestseller or Match Score */}
-        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5">
-          {article.score ? (
-            <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-[#FAF8F4] text-[#5E7656] border border-[#ECE8E2] shadow-sm">
-              {(article.score * 100).toFixed(0)}% Match
-            </span>
-          ) : (
-            <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-white/90 backdrop-blur-md text-[#2B2B2B] border border-[#ECE8E2] shadow-sm">
-              Bestseller
-            </span>
-          )}
+    <div className="perspective-1000 animate-reveal-3d">
+      <div
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={`group relative bg-white rounded-[24px] p-4 border border-[#ECE8E2] luxury-glass-3d card-3d-hover cursor-pointer flex flex-col justify-between preserve-3d ${
+          isClicked ? 'scale-[0.97]' : ''
+        }`}
+      >
+        {/* Product Image Area */}
+        <div className="relative aspect-square w-full rounded-[20px] bg-[#F3EFE8]/70 overflow-hidden flex items-center justify-center p-3 preserve-3d">
+          
+          {/* Badge: Bestseller or Match Score */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 transform translate-z-10">
+            {article.score ? (
+              <span className="px-2.5 py-1 text-[10px] font-bold rounded-full luxury-glass-3d text-[#5E7656] border border-[#ECE8E2] shadow-md">
+                {(article.score * 100).toFixed(0)}% Match
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full luxury-glass-3d text-[#2B2B2B] border border-[#ECE8E2] shadow-md">
+                Bestseller
+              </span>
+            )}
+          </div>
+
+          <img
+            src={displayImage}
+            alt={article.title}
+            onError={() => setImageError(true)}
+            className="w-full h-full object-cover object-center rounded-[16px] group-hover:scale-108 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+
+          {/* Explainability Reason Hover Overlay */}
+          <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[#2B2B2B]/90 via-[#2B2B2B]/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-20 flex items-center gap-2">
+            <span className="text-amber-300 text-xs">✨</span>
+            <p className="text-[11px] text-white font-medium leading-tight line-clamp-2">
+              {article.reason || 'Recommended based on your session style'}
+            </p>
+          </div>
         </div>
 
-        <img
-          src={displayImage}
-          alt={article.title}
-          onError={() => setImageError(true)}
-          className="w-full h-full object-cover object-center rounded-[16px] group-hover:scale-105 transition-transform duration-700 ease-out"
-          loading="lazy"
-        />
+        {/* Product Title & Floating 3D Plus Add Button */}
+        <div className="mt-4 flex items-end justify-between px-1 preserve-3d">
+          <div>
+            <h3 className="font-serif-luxury text-lg font-semibold text-[#2B2B2B] group-hover:text-[#5E7656] transition-colors leading-tight line-clamp-1">
+              {article.title}
+            </h3>
+            <p className="text-sm font-semibold text-[#777777] mt-0.5">{priceFormatted}</p>
+          </div>
 
-        {/* Explainability Reason Hover Overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[#2B2B2B]/90 via-[#2B2B2B]/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-20 flex items-center gap-2">
-          <span className="text-amber-300 text-xs">✨</span>
-          <p className="text-[11px] text-white font-medium leading-tight line-clamp-2">
-            {article.reason || 'Recommended based on your session style'}
-          </p>
+          {/* Floating 3D Plus Add Button */}
+          <button
+            onClick={handleAddToCart}
+            className="w-10 h-10 rounded-full bg-[#FAF8F4] border border-[#ECE8E2] hover:bg-[#5E7656] hover:text-white hover:border-[#5E7656] text-[#2B2B2B] flex items-center justify-center text-lg font-medium shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-110 active:scale-90"
+            title="Add to Cart"
+          >
+            +
+          </button>
         </div>
-      </div>
-
-      {/* Product Title & Floating Plus Add Button */}
-      <div className="mt-4 flex items-end justify-between px-1">
-        <div>
-          <h3 className="font-serif-luxury text-lg font-semibold text-[#2B2B2B] group-hover:text-[#5E7656] transition-colors leading-tight line-clamp-1">
-            {article.title}
-          </h3>
-          <p className="text-sm font-semibold text-[#777777] mt-0.5">{priceFormatted}</p>
-        </div>
-
-        {/* Floating Circular Plus Add-To-Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          className="w-9 h-9 rounded-full bg-[#FAF8F4] border border-[#ECE8E2] hover:bg-[#5E7656] hover:text-white hover:border-[#5E7656] text-[#2B2B2B] flex items-center justify-center text-base font-medium shadow-sm transition-all active:scale-90"
-          title="Add to Cart"
-        >
-          +
-        </button>
       </div>
     </div>
   );
