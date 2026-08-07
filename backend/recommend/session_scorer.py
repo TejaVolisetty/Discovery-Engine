@@ -166,8 +166,38 @@ def score_candidates(
         pop_count = _POPULARITY_CACHE.get(cand_id_str, 0)
         pop_prior = math.log1p(pop_count) / max_log_pop
 
-        # D. Combine Scores: 50% base + 40% recency + 10% popularity
-        final_score = 0.50 * base_score + 0.40 * recency_boost + 0.10 * pop_prior
+        # D. Title & Category Match Boost for Same-Product Line Accuracy
+        title_boost = 0.0
+        cat_boost = 0.0
+        if articles_df is not None and not articles_df.empty and cand_id_str in articles_df.index:
+            cand_row = articles_df.loc[cand_id_str]
+            if isinstance(cand_row, pd.DataFrame):
+                cand_row = cand_row.iloc[0]
+            cand_title = str(cand_row.get("prod_name", "")).lower()
+            cand_cat = str(cand_row.get("product_type_name", "")).lower()
+
+            if session_art_ids:
+                recent_art_id = session_art_ids[-1]
+                if recent_art_id in articles_df.index:
+                    rec_row = articles_df.loc[recent_art_id]
+                    if isinstance(rec_row, pd.DataFrame):
+                        rec_row = rec_row.iloc[0]
+                    rec_title = str(rec_row.get("prod_name", "")).lower()
+                    rec_cat = str(rec_row.get("product_type_name", "")).lower()
+
+                    # Category Match Bonus (+0.25)
+                    if rec_cat and (rec_cat in cand_cat or cand_cat in rec_cat):
+                        cat_boost = 0.25
+
+                    # Title Word Overlap Bonus (+0.35)
+                    rec_words = set(w for w in rec_title.split() if len(w) > 2)
+                    cand_words = set(w for w in cand_title.split() if len(w) > 2)
+                    if rec_words and cand_words:
+                        overlap = len(rec_words.intersection(cand_words)) / max(len(rec_words), 1)
+                        title_boost = 0.35 * overlap
+
+        # Combine Scores: 35% base vector + 30% recency + 25% title/cat match + 10% popularity
+        final_score = 0.35 * base_score + 0.30 * recency_boost + 0.25 * min(1.0, cat_boost + title_boost) + 0.10 * pop_prior
         final_score = max(0.0, min(1.0, float(final_score)))
 
         # E. Human-Readable Reason Generation
