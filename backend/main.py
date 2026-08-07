@@ -316,14 +316,24 @@ def get_home_recommendations(
     # Attach Explanations
     explained = attach_explanations(diversified[:limit])
 
-    # Format JSON payload
-    formatted_recs = [format_article_response(item, articles_df) for item in explained]
+    # Format JSON payload & strictly deduplicate by article_id and product title
+    formatted_recs = []
+    seen_ids = set()
+    seen_titles = set()
+    for item in explained:
+        resp = format_article_response(item, articles_df)
+        aid = resp["article_id"]
+        title = resp["title"].lower()
+        if aid not in seen_ids and title not in seen_titles:
+            seen_ids.add(aid)
+            seen_titles.add(title)
+            formatted_recs.append(resp)
 
     return {
         "session_id": session_id,
         "consent_applied": consent_granted,
         "total_results": len(formatted_recs),
-        "recommendations": formatted_recs
+        "recommendations": formatted_recs[:limit]
     }
 
 

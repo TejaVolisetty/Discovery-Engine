@@ -26,10 +26,28 @@ def generate_synthetic_data():
     print("[INFO] Raw dataset files not found in /data/raw. Generating synthetic sample dataset...")
     np.random.seed(SEED)
 
-    # 1. Articles
-    categories = ["Tops", "Trousers", "Dresses", "Shoes", "Jackets", "Accessories", "Knitwear", "Skirts"]
-    colors = ["Black", "White", "Blue", "Red", "Beige", "Green", "Grey", "Pink"]
-    departments = ["Womenswear", "Menswear", "Baby/Children", "Sportswear", "Divided"]
+    # 1. Articles with rich, realistic fashion titles and categories
+    categories = ["Tops", "Trousers", "Dresses", "Shoes", "Jackets", "Accessories", "Knitwear", "Skirts", "Hoodies", "Blazers", "Jeans", "Heels", "Handbags", "Sunglasses", "Coats"]
+    colors = ["Black", "White", "Blue", "Red", "Beige", "Green", "Grey", "Pink", "Navy", "Gold"]
+    departments = ["Womenswear", "Menswear", "Sportswear", "Divided", "Accessories"]
+
+    fashion_types = {
+        "Tops": ["Cotton T-Shirt", "Silk Blouse", "Ribbed Tank Top", "Graphic Tee", "Polo Shirt"],
+        "Trousers": ["Tailored Pants", "Chino Trousers", "Cargo Pants", "Pleated Slacks"],
+        "Jeans": ["Slim Fit Denim Jeans", "Straight Leg Jeans", "High-Waist Mom Jeans"],
+        "Dresses": ["Floral Midi Dress", "Cocktail Evening Dress", "Wrap Sun Dress", "A-Line Satin Dress"],
+        "Shoes": ["Leather Oxfords", "Canvas Sneakers", "Running Trainers", "Loafers", "Ankle Boots"],
+        "Heels": ["Stiletto Heels", "Block Heel Sandals", "Classic Pumps"],
+        "Jackets": ["Denim Trucker Jacket", "Biker Leather Jacket", "Puffer Jacket", "Bomber Jacket"],
+        "Blazers": ["Double-Breasted Blazer", "Slim Fit Suit Blazer", "Oversized Linen Blazer"],
+        "Coats": ["Wool Blend Trench Coat", "Parka Coat", "Double-Faced Overcoat"],
+        "Hoodies": ["Fleece Pullover Hoodie", "Zip-Up Sweatshirt", "Oversized Hoodie"],
+        "Knitwear": ["Cashmere Knit Sweater", "Chunky Cardigan", "Turtle Neck Jumper"],
+        "Skirts": ["Pleated Tennis Skirt", "Denim Mini Skirt", "Leather Pencil Skirt"],
+        "Accessories": ["Leather Crossbody Bag", "Polarized Sunglasses", "Leather Belt", "Knit Beanie Hat"],
+        "Handbags": ["Structured Leather Tote", "Mini Shoulder Bag", "Canvas Tote"],
+        "Sunglasses": ["Cat-Eye Sunglasses", "Aviator Sunglasses", "Square Frame Sunglasses"]
+    }
 
     article_rows = []
     for i in range(1, TARGET_ARTICLES + 1):
@@ -37,10 +55,15 @@ def generate_synthetic_data():
         cat = np.random.choice(categories)
         col = np.random.choice(colors)
         dept = np.random.choice(departments)
+        
+        type_options = fashion_types.get(cat, ["Apparel Item"])
+        type_name = np.random.choice(type_options)
+        prod_title = f"{col} {type_name}"
+
         art_rows_dict = {
             "article_id": art_id,
             "product_code": str(100000 + i // 3),
-            "prod_name": f"{col} {cat} {i}",
+            "prod_name": prod_title,
             "product_type_no": str(200 + hash(cat) % 50),
             "product_type_name": cat,
             "graphical_appearance_no": "1010016",
@@ -61,7 +84,7 @@ def generate_synthetic_data():
             "section_name": "Womens Every Day",
             "garment_group_no": "1002",
             "garment_group_name": "Jersey Fancy",
-            "detail_desc": f"Stylish {col.lower()} {cat.lower()} suitable for daily wear.",
+            "detail_desc": f"Premium {col.lower()} {type_name.lower()} designed for modern comfort and style.",
             "image_path": f"images/{art_id[:3]}/{art_id}.jpg"
         }
         article_rows.append(art_rows_dict)
