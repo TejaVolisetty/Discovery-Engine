@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic
+numpy
+pandas
+pyarrow
+faiss-cpu
+sentence-transformers
+open_clip_torch
+torch
+pillow
+redis
+python-dotenv
+anthropic
+lightgbm
+pytest
+httpx
