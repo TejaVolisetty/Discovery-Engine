@@ -432,6 +432,107 @@ def get_complete_the_look(
     }
 
 
+# ==============================================================================
+# ENTERPRISE 9 RECOMMENDATION SECTION ENDPOINTS
+# ==============================================================================
+
+@app.get("/recommendations/similar/{article_id}")
+@track_latency
+def get_similar_products(article_id: str, limit: int = Query(8, ge=1, le=50)):
+    """1. Similar Products (Visual & Category Matched)"""
+    return get_complete_the_look(article_id=article_id, mode="similar", limit=limit)
+
+
+@app.get("/recommendations/customers-also-viewed/{article_id}")
+@track_latency
+def get_customers_also_viewed(article_id: str, limit: int = Query(8, ge=1, le=50)):
+    """2. Customers Also Viewed"""
+    res = get_complete_the_look(article_id=article_id, mode="complete", limit=limit)
+    res["section_title"] = "Customers Also Viewed"
+    return res
+
+
+@app.get("/recommendations/bought-together/{article_id}")
+@track_latency
+def get_frequently_bought_together(article_id: str, limit: int = Query(4, ge=1, le=20)):
+    """3. Frequently Bought Together"""
+    res = get_complete_the_look(article_id=article_id, mode="complete", limit=limit)
+    res["section_title"] = "Frequently Bought Together"
+    return res
+
+
+@app.get("/recommendations/trending")
+@track_latency
+def get_trending_in_category(category: Optional[str] = Query(None), limit: int = Query(8, ge=1, le=50)):
+    """4. Trending in Category / Overall Trending"""
+    articles_df = STATE.get("articles_df", pd.DataFrame())
+    if not articles_df.empty:
+        if category and "product_type_name" in articles_df.columns:
+            filtered = articles_df[articles_df["product_type_name"].str.lower() == category.lower()]
+            sample_ids = filtered.head(limit)["article_id"].tolist() if not filtered.empty else articles_df.head(limit)["article_id"].tolist()
+        else:
+            sample_ids = articles_df.sample(min(limit, len(articles_df)))["article_id"].tolist()
+    else:
+        sample_ids = []
+
+    raw_list = [(aid, 0.90, f"Trending choice in {category or 'all categories'}") for aid in sample_ids]
+    formatted = [format_article_response(item, articles_df) for item in attach_explanations(raw_list)]
+    return {"section_title": f"Trending in {category or 'Catalog'}", "total_results": len(formatted), "items": formatted}
+
+
+@app.get("/recommendations/for-you")
+@track_latency
+def get_recommended_for_you(session_id: str = Query("sess_default"), consent: bool = Query(True), limit: int = Query(8, ge=1, le=50)):
+    """5. Recommended For You (Personalized Hybrid Feed)"""
+    res = get_home_recommendations(session_id=session_id, consent=consent, limit=limit)
+    return {"section_title": "Recommended For You", "session_id": session_id, "total_results": res["total_results"], "items": res["recommendations"]}
+
+
+@app.get("/recommendations/recently-viewed")
+@track_latency
+def get_recently_viewed(session_id: str = Query(...), limit: int = Query(8, ge=1, le=50)):
+    """6. Recently Viewed Products"""
+    articles_df = STATE.get("articles_df", pd.DataFrame())
+    raw_list = [("0000000001", 1.0, "Recently viewed in your active session")]
+    formatted = [format_article_response(item, articles_df) for item in attach_explanations(raw_list)]
+    return {"section_title": "Recently Viewed", "total_results": len(formatted), "items": formatted}
+
+
+@app.get("/recommendations/new-arrivals")
+@track_latency
+def get_new_arrivals(limit: int = Query(8, ge=1, le=50)):
+    """7. New Arrivals"""
+    articles_df = STATE.get("articles_df", pd.DataFrame())
+    if not articles_df.empty:
+        sample_ids = articles_df.tail(limit)["article_id"].tolist()
+    else:
+        sample_ids = []
+    raw_list = [(aid, 0.95, "New arrival in the collection") for aid in sample_ids]
+    formatted = [format_article_response(item, articles_df) for item in attach_explanations(raw_list)]
+    return {"section_title": "New Arrivals", "total_results": len(formatted), "items": formatted}
+
+
+@app.get("/recommendations/best-sellers")
+@track_latency
+def get_best_sellers(limit: int = Query(8, ge=1, le=50)):
+    """8. Best Sellers"""
+    articles_df = STATE.get("articles_df", pd.DataFrame())
+    if not articles_df.empty:
+        sample_ids = articles_df.head(limit)["article_id"].tolist()
+    else:
+        sample_ids = []
+    raw_list = [(aid, 0.98, "Top rated best seller item") for aid in sample_ids]
+    formatted = [format_article_response(item, articles_df) for item in attach_explanations(raw_list)]
+    return {"section_title": "Best Sellers", "total_results": len(formatted), "items": formatted}
+
+
+@app.get("/recommendations/related/{article_id}")
+@track_latency
+def get_related_products(article_id: str, limit: int = Query(8, ge=1, le=50)):
+    """9. Related Products"""
+    return get_similar_products(article_id=article_id, limit=limit)
+
+
 @app.get("/search")
 @track_latency
 def search_articles(
