@@ -1,4 +1,11 @@
 <img width="1917" height="962" alt="Screenshot 2026-08-08 060051" src="https://github.com/user-attachments/assets/10bd2f50-5911-4ffc-8bf5-ad7edecb4267" />
+<img width="1917" height="981" alt="Screenshot 2026-08-08 060119" src="https://github.com/user-attachments/assets/23055cb7-0473-4a50-ac04-4dde4c996aff" />
+<img width="1917" height="975" alt="Screenshot 2026-08-08 060134" src="https://github.com/user-attachments/assets/77efa73a-30a0-498e-b6b1-84c64043aaaa" />
+<img width="1917" height="972" alt="Screenshot 2026-08-08 060146" src="https://github.com/user-attachments/assets/3b3af15e-eac9-4255-895d-2898432bc734" />
+<img width="1917" height="967" alt="Screenshot 2026-08-08 060155" src="https://github.com/user-attachments/assets/eca60ee1-09c0-4f9a-b322-5fe5b2209b28" />
+<img width="1917" height="957" alt="Screenshot 2026-08-08 060203" src="https://github.com/user-attachments/assets/661c7f23-939b-4a54-974e-11dd6bd92855" />
+
+
 
 # Discovery Engine 🚀
 > **Track 7 · Personalized Multi-Intent Product Recommendations & Discovery Engine**
