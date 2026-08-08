@@ -1,3 +1,5 @@
+<img width="1917" height="962" alt="Screenshot 2026-08-08 060051" src="https://github.com/user-attachments/assets/10bd2f50-5911-4ffc-8bf5-ad7edecb4267" />
+
 # Discovery Engine 🚀
 > **Track 7 · Personalized Multi-Intent Product Recommendations & Discovery Engine**
 
